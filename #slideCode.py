@@ -1,6 +1,13 @@
 #slideCode.py
 "Here, we write the functions that were mentioned in the slides"
 import math
+import pandas as r
+
+sample = r.read_csv('sample_sub.csv')
+testD = r.read_csv('test.csv')
+trainD = r.read_csv('train.csv')
+
+"D = one of the data sets"
 
 "Creating tree"
 def DT_construct(D):
@@ -47,7 +54,7 @@ def splitSuccessor(node, object):
     "TODO: Electing what branch to go down"
 
 def representativeClass(dSet):
-    "TODO: Finding classification from the dataset"
+    "TODO: Finding classification from the dataset, Data sets are read with the column name, these will be the atributes"
 
 def splitCriterion(dSet):
     "TODO: Using intelligence gain, decide what criteria to split"

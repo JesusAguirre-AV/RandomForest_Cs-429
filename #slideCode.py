@@ -66,19 +66,36 @@ def classMatch(dA, dB):
     "TODO: check to see if the classes between the two datapoints match"
 
 def impurity(dSet):
-    sum = 0
-    for d in dSet:
-        sum += prob(d) * (math.log2(prob(d)))
-    return -sum
+
+    return sumF(lambda x: x * (math.log2(x)), probabilityList(dSet))
+    "sum = 0"
+    "for d in dSet:"
+    "TAB sum += prob(d) * (math.log2(prob(d)))"
+    "return -sum"
 
 def giniImpurity(dSet):
-    sum = 0
-    for d in dSet:
-        sum += (prob(d) ** 2)
-    return (1-sum)
+    
+    return 1 - (sumF(lambda x: x ** 2, probabilityList(dSet)))
+    "sum = 0"
+    "for d in dSet:"
+    "TAB sum += (prob(d) ** 2)"
+    "return (1-sum)"
 
-def informationGain():
+def informationGain(dSet):
     "TODO: which impurity to use, which are the samples"
+    result = impurity(dSet) - sumF((sWithValue(dSet)/samples(dSet)) * sumF(impurity, dWithValues(dSet)))
+
+def sumF(function, list):
+    "passing an argument to sum the results"
+    sum = 0
+    for l in list:
+        sum += function(l)
+    return sum
+
+def probabilityList(dSet):
+    probs = []
+    for d in dSet:
+        probs.append(prob(d))
 
 "This is the node class that contains its successors (cosider the information gain and purity as well)"
 class node:

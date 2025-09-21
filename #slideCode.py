@@ -52,6 +52,9 @@ def isLeaf(n):
 
 def splitSuccessor(node, object):
     "TODO: Electing what branch to go down"
+    for s in node.succesors:
+        for t in object.traits:
+            "TODO: Going through successors and seeing what has matching traits, how to read object"
 
 def representativeClass(dSet):
     "TODO: Finding classification from the dataset, Data sets are read with the column name, these will be the atributes"

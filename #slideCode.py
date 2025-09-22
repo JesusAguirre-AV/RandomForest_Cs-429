@@ -1,11 +1,11 @@
 #slideCode.py
 "Here, we write the functions that were mentioned in the slides"
 import math
-import pandas as r
+"import pandas as r"
 
-sample = r.read_csv('sample_sub.csv')
-testD = r.read_csv('test.csv')
-trainD = r.read_csv('train.csv')
+"sample = r.read_csv('sample_sub.csv')"
+"testD = r.read_csv('test.csv')"
+"trainD = r.read_csv('train.csv')"
 
 "D = one of the data sets"
 

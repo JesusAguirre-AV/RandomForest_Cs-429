@@ -1,3 +1,7 @@
+
+
+
+
 ### Experiments
 - Compare and contrast the trees built by IG with entropy, gini index, 
 and misclassification error, in terms of their structural properties and 

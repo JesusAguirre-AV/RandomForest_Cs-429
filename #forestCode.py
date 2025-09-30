@@ -1,8 +1,8 @@
 #forestCode.py
-import slideCode
+# import slideCode
 import pandas as r
 import numpy
-from spicy import stats
+from scipy import stats
 
 
 sample = r.read_csv('sample_sub.csv')

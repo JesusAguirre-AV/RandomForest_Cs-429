@@ -1,4 +1,4 @@
-# import decisionTree
+import decisionTree as DT
 import pandas as pd
 
 training_data = pd.read_csv('train.csv')
@@ -16,12 +16,13 @@ modeww = df['womp'].nunique()
 print("unique : ")
 print(modeww)
 
-print()
-
-
 y = training_data["isFraud"].mode()[0]
 
 print("moajority 0: \n")
 print(y)
 
-# tree = decisionTree.decisionTree.DT_construct(training_data)
+
+# create decision tree
+
+tree = DT.decisionTree(training_data)
+head_node = tree.DT_construction()

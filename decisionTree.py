@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 "Here, we write the functions that were mentioned in the slides"
 import math
 "import pandas as r"
@@ -32,12 +33,10 @@ class decisionTree:
         t.label = self.representativeClass(D)
         # Is the current dataset under the same label
         if self.impure(D):
-            # splitCriterion is figuring out what to split it with
-            # todo: fix and implement split criteria
-            criterion = self.splitCriterion(D)
+            criterion = self.splitCriterion(D) #todo: fix split criteria for categorical and numerical
         else:
             return t
-        Ds = self.decompose(D, criterion)
+        Ds = self.decompose(D, criterion) #todo: fix decompose
         for d in Ds:
             # We make the next branches here
             self.addSuccessor(t, self.DT_construct(d))
@@ -120,17 +119,63 @@ class decisionTree:
         majorityClass = dSet["isFraud"].mode()[0]
         return majorityClass
 
-
     def splitCriterion(self, dSet):
         """
         Split Criterion via information gain (with entropy), gini index, and chi square.
+        The feature is categorical if it is a string.
+        Feature is numerical if it is a number.
+        They will vary based on this
+        TODO: Take into consideration missing data!!! This assumes there are no missing values.
         Parameters:
             dSet - dataset
-        Returns: a split criterion or something.
+        Returns: The feature that produces the best split criterion with information gain.
         TODO: Using intelligence gain, decide what criteria to split
         """
+        # Used to determine which feature produces the most information gain
+        maxInfoGain = -1
+        bestCriterionFeature = None
+        bestSplitValue = None
+
+        # Only the features, does not include ID or class declaration(y)
+        features = dSet.drop(columns=["isFraud", "TransactionID"])
+
+        for feature_name in features.columns:
+            # Handle Categorical Data
+            if pd.api.types.is_string_dtype(features[feature_name]):
+                dSetSubsets = self.decompose(dSet, feature_name)
+
+                if len(dSetSubsets) <= 1:
+                    # todo: wtf does this do? idk
+                    continue
+
+                # todo: fix infomation gain functin?
+                infoGain = self.informationGain(dSetSubsets)
+
+                # keep track of the best information gain
+                if infoGain > maxInfoGain:
+                    maxInfoGain = infoGain
+                    bestCriterionFeature = feature_name
+
+            # Handle Numeric Data
+            else:
+                # Find the best split point for the numerical feature
+                best_split_value = self.findBestNumericSplit(dSet, feature_name)
+
+                if best_split_value is not None:
+                    # Create two subsets based on the best split point
+                    subset_left = dSet[dSet[feature_name] <= best_split_value]
+                    subset_right = dSet[dSet[feature_name] > best_split_value]
+
+                    # Calculate information gain for the numeric split
+                    infoGain = self.informationGain(dSet, [subset_left, subset_right], feature_name, is_numeric=True)
+
+                    # Keep track of the best information gain
+                    if infoGain > maxInfoGain:
+                        maxInfoGain = infoGain
+                        bestCriterionFeature = feature_name
         #all gini/info gain/chi
-        return NotImplemented
+        return bestCriterionFeature
+
 
     def chiSquare(self, dSet):
         """
@@ -153,6 +198,16 @@ class decisionTree:
         """
         # Empty subset of decomposed D sets, subsets of D
         Ds = []
+
+        # Criteria is Categorical, handle as such
+        # todo: maybe this needs to be to 'isinstance'
+        if pd.api.types.is_string_dtype(dSet[criterion]):
+            print("Something")
+
+        # Criteria is Numerical, handle as such
+        # todo: maybe this is supposed to take in a tuple
+        else:
+
         # one for numerical data
         # one for categorical data
         # todo: what is the difference between a categorical and numerical split
@@ -187,7 +242,7 @@ class decisionTree:
         "TAB sum += (prob(d) ** 2)"
         "return (1-sum)"
 
-    def informationGain(self, dSet):
+    def informationGain(self, dSet, dSubSets, feature_name, is_numeric=False):
         """
         A metric that determines how much information was gain based on split.
         Parameters:
@@ -198,6 +253,8 @@ class decisionTree:
         # todo: implement entropy
         # todo probably redo this
         result = impurity(dSet) - sumF((sWithValue(dSet)/samples(dSet)) * sumF(impurity, dWithValues(dSet)))
+        # todo check this
+        return result
 
     def sumF(self, function, list):
         """

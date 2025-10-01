@@ -1,6 +1,29 @@
+# Project 1: Random Forest
+
+## How to run
+
+```angular2html
+somehow run or something 
+```
 
 
+### Contributors
 
+- Jesus | Implemented Decision Tree Class, Node Class
+- Carly Salazar | Implemented Decision Tree Class, 
+- Ben |
+- Greg |
+
+### Kaggle 
+Kaggle score etc
+
+### File Manifest
+- DecisionTree.py
+  - Contains decision trees functions
+  - Contains node class
+- Main
+  - Contains
+  
 
 ### Experiments
 - Compare and contrast the trees built by IG with entropy, gini index, 

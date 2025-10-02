@@ -1,18 +1,8 @@
 import pandas as pd
 import numpy as np
-from sklearn.metrics.cluster import entropy
-
-from main import criterion
-
-"Here, we write the functions that were mentioned in the slides"
 import math
-"import pandas as r"
+from scipy.stats import chi2
 
-"sample = r.read_csv('sample_sub.csv')"
-"testD = r.read_csv('test.csv')"
-"trainD = r.read_csv('train.csv')"
-
-"D = one of the data sets"
 class decisionTree:
     def __init__(self, D):
         """
@@ -20,7 +10,11 @@ class decisionTree:
         """
         self.D = D
 
-    ##### MAIN DECISION TREE CREATION FUNCTIONS #####
+    '''
+    MAIN DECISION TREE CREATION FUNCTIONS
+    - Used to recursively create the tree
+    - Used to classify the data given a vector x (features)
+    '''
 
     def DT_construction(self):
         """
@@ -34,14 +28,20 @@ class decisionTree:
         Parameters:
             D - dataset
         Return: the head node of the tree.
-        TODO: work on this one
         """
         t = self.newNode()
         t.label = self.representativeClass(D)
         # Is the current dataset under the same label
         if self.impure(D):
             criterion = self.splitCriterion(D)
+            # If there is not a good stopping criterion
+            if criterion is None:
+                return t
+
             t.criterion = criterion
+            # Category splits
+            if isinstance(criterion, str):
+                t.split_values = D[criterion].unique()
         else:
             return t
         Ds = self.decompose(D, criterion)
@@ -65,7 +65,12 @@ class decisionTree:
             return self.DT_classify(x, self.splitSuccessor(t, x))
 
 
-    ### SPLITTING FUNCTIONS ###
+    '''
+    SPLITTING FUNCTIONS
+    - Used for determining how to split the data into different classifiers
+    - Decomposes the data into different classifiers
+    - Split the data into the different groups
+    '''
 
     def splitCriterion(self, dSet):
         """
@@ -74,6 +79,7 @@ class decisionTree:
         Feature is numerical if it is a number.
         They will vary based on this
         TODO: Take into consideration missing data!!! This assumes there are no missing values.
+        Todo: add chi square at the end for prepruning or something
         Parameters:
             dSet - dataset
         Returns: The feature that produces the best split criterion with information gain.
@@ -84,7 +90,8 @@ class decisionTree:
         bestSplitValue = None
 
         # Only the features, does not include ID or class declaration(Y)
-        features = dSet.drop(columns=["isFraud", "TransactionID"])
+        # features = dSet.drop(columns=["isFraud", "TransactionID"])
+        features = dSet.drop(columns=["isFraud"])
 
         for feature_name in features.columns:
             # Handle Categorical Data
@@ -113,7 +120,7 @@ class decisionTree:
                     # Subset left of the split value (values less than the split value)
                     leftSubSet = dSet[dSet[feature_name] <= splitVal]
                     # Subset right of the split value (values more than the split value)
-                    rightSubSet = dSet[dSet[feature_name] >= splitVal]
+                    rightSubSet = dSet[dSet[feature_name] > splitVal]
 
                     infoGain = self.informationGain(dSet, [leftSubSet, rightSubSet])
                     # keep track of the best information gain
@@ -121,6 +128,8 @@ class decisionTree:
                         maxInfoGain = infoGain
                         bestSplitVal = splitVal
                         bestCriterionFeature = (feature_name, bestSplitVal)
+
+        # todo add chi square at the end, i think?
         return bestCriterionFeature
 
     def decompose(self, dSet, criterion):
@@ -154,7 +163,6 @@ class decisionTree:
             # Create the "right" subset (greater than the threshold)
             subset_right = dSet[dSet[split_column] > threshold]
             dSetSubsets.append(subset_right)
-
         return dSetSubsets
 
     def splitSuccessor(self, node, x):
@@ -164,25 +172,41 @@ class decisionTree:
             node - node
             dataRow - A row of data that needs to be classified
         Returns: A node for data point to visit
-        TODO: work on this
         """
         criterion = node.criterion
 
         # Handle categorical features
         if isinstance(criterion, str):
-            return NotImplemented
+            feature_name, threshold = criterion
+            # If the data point's value is less than or equal, go to the first child (left)
+            if x[feature_name] <= threshold:
+                return node.successors[0]
+            # else go to the second child (right)
+            else:
+                return node.successors[1]
 
         # Handle numerical features
         if isinstance(criterion, tuple):
-            return NotImplemented
+            feature_name = criterion
+            feature_value = x[feature_name]
 
-        # for s in node.succesors:
-        #     for t in object.traits:
-        #         # TODO: Going through successors and seeing what has matching traits, how to read object
-        return NotImplemented
+            try:
+                # Find the index of the data point's category in the list we saved on the node
+                # For example, if split_values is ['W', 'H', 'C'] and the value is 'H', the index is 1
+                idx = np.where(node.split_values == feature_value)[0][0]
+                # Return the child node at that same index
+                return node.successors[idx]
+            except IndexError:
+                return node.successors[0]
 
 
-    ##### IMPURITY/INFO GAIN FUNCTIONS #####
+    '''
+    IMPURITY/INFO GAIN FUNCTIONS
+    - Used to describe the impurity and represention of each class
+    - Used to calculate impurity of the data via Gini Index, entropy, and misclassification error
+    - Information gain is used to determine how well a feature splits the data
+    - Chi-square is used as a termination criterion
+    '''
 
     def impure(self, dSet):
         """
@@ -201,7 +225,6 @@ class decisionTree:
     def representativeClass(self, dSet):
         """
         The majority class (isFraud, !isFraud), the class that is >0.50
-        todo: what exactly does this return and does it matter?
         Parameters:
             dSet - dataset
         Returns: The class that is the most representative of the given dataset.
@@ -210,14 +233,14 @@ class decisionTree:
         majorityClass = dSet["isFraud"].mode()[0]
         return majorityClass
 
-    def chiSquare(self, dSet, alpha):
+    def chiSquare(self, dSet, criterion, alpha=0.5):
         """
         Used for termination criteria.
         Parameters:
             dSet - dataset
         Returns: something?
         """
-    #   todo: implement the chi square thing correctly
+        # todo: implement the chi square thing correctly
         return NotImplemented
 
     def entropy(self, dSet):
@@ -232,10 +255,6 @@ class decisionTree:
         """
         probs = self.probabilityList(dSet)
         return -self.sumF(lambda x: x * (math.log2(x)) if x > 0 else 0, probs)
-        # "sum = 0"
-        # "for d in dSet:"
-        # "TAB sum += prob(d) * (math.log2(prob(d)))"
-        # "return -sum"
 
     def giniIdex(self, dSet):
         """
@@ -246,12 +265,15 @@ class decisionTree:
         """
         probs = self.probabilityList(dSet)
         return 1 - (self.sumF(lambda x: x ** 2, probs))
-        # "sum = 0"
-        # "for d in dSet:"
-        # "TAB sum += (prob(d) ** 2)"
-        # "return (1-sum)"
 
     def missclassicationError(self, dSet):
+        """
+        A method of determining impurity
+        Parameters:
+            dSet - dataset
+        Returns: A misclassification error, [0,1]
+        todo: implement this please
+        """
         return NotImplemented
 
     def informationGain(self, dSet, dSubSets):
@@ -262,7 +284,7 @@ class decisionTree:
         Parameters:
             dSet - dataset
         Returns: The amount of information gained, [0,1]
-        TODO: which impurity to use, which are the samples
+        TODO: handle all three types of impurity
         """
         data_entropy = self.entropy(dSet)
         weightedSubsetEntopy = 0
@@ -304,25 +326,33 @@ class decisionTree:
         total = len(classTarget)
         classCounts = classTarget.value_counts()
 
+        if total == 0:
+            return []
+
         # Find the probability for
         for count in classCounts:
             prob = count/total
             probs.append(prob)
+        return probs
 
 
-    ##### NODE/TREE FUNCTIONS #####
+    '''
+    NODE/TREE FUNCTIONS
+    - creates new nodes
+    - add a successor node
+    - determines if leaf
+    '''
 
     def newNode(self):
         """
         Creates a new node for decision tree.
         """
-        newT = node()
+        newT = Node()
         return newT
 
     def addSuccessor(self, n, s):
         """
         Adding a successor/child node to the current node.
-        todo: does this mean child?
         Parameters:
             n - current node
             s - successor node
@@ -338,7 +368,10 @@ class decisionTree:
         """
         return not (not n.successors)
 
-class node:
+class Node:
+    """
+    Class that contains the information about a node.
+    """
     # todo: This is the node class that contains its successors (cosider the information gain and purity as well)
     def __init__(self):
         """

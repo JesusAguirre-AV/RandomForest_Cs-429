@@ -2,7 +2,10 @@ import decisionTree as DT
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, balanced_accuracy_score
+import time
 
+# Start timer
+start_time = time.time()
 '''
 ##### FLAGS #####
 Impurity Options
@@ -52,7 +55,7 @@ x = data.drop(columns=['isFraud', 'TransactionID'])
 
 # Training and testing the data with the training dataset
 # Testing data = 0.20, Validation = 0.25, Training = 0.55
-# todo: use the validation sets for something
+# todo: use the validation sets for hyperparameter tuning?
 X_train_val, X_test, y_train_val, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=0.25, random_state=42)
 
@@ -100,3 +103,9 @@ submission_df.to_csv(
     index=False,
     columns=['TransactionID', 'isFraud']
 )
+
+# End time
+end_time = time.time()
+elapsed_time = end_time - start_time
+# Print the elapsed time
+print(f"\nTotal script execution time: {elapsed_time:.2f} seconds")

@@ -1,69 +1,102 @@
-# import decisionTree as DT
+import decisionTree as DT
 import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, classification_report, balanced_accuracy_score
+
+'''
+##### FLAGS #####
+Impurity Options
+Gini - G
+Entropy - E
+Misclassification - M
+'''
+# Set impurity method
+impurity_type = 'G'
+# set alpha level
+alpha = 0.1
+# submission file name
+out_file = 'submission.csv'
+
+'''
+Training Data
+- uses training/testing validation splitting
+'''
 
 training_data = pd.read_csv('train.csv')
-# print(training_data)
-
-# testingggg!!
-
-
-# d = [1,1,1,1,1,1]
-# # d = [0]
-# df = pd.DataFrame(d, columns=['womp'])
-# modeww = df['womp'].mode()[0]
-# modeww = df['womp'].nunique()
-#
-# print("unique : ")
-# print(modeww)
-#
-# y = training_data["isFraud"].mode()[0]
-#
-# print("moajority 0: \n")
-# print(y)
-
-features = training_data.drop(columns=["isFraud", "TransactionID"])
-
-# for feature_name in features.columns:
-#     # val = features[feature_name]
-#     # if pd.api.types.is_numeric_dtype(features[feature_name]):
-#     #     print(f"{feature_name}: numeric")
-#
-#     if pd.api.types.is_string_dtype(features[feature_name]):
-#         print(f"{feature_name}: categorical")
-#     else:
-#         print(f"{feature_name}: numeric")
-
-criterion = "C14"
-
-if isinstance(criterion, str):
-    print(f"{criterion}: is a string")
-else:
-    print(f"{criterion}: is not a string")
-
+# Temp data which removes rows with missing data
+# TODO: change this since it needs to have missing data
 mask = training_data.isin(['NotFound']).any(axis=1)
 training_cleaned = training_data[~mask]
+# full_data = training_cleaned
+full_data = training_data
 
-pd.set_option('display.max_columns', None)
-
-# print(training_data)
-# print("clean data")
-# print(training_cleaned)
-
-
-
-#
-# for feature in features.columns:
-#     # print(feature)
-#     val = (features[feature].mode() & features[feature].mode() != "NotFound")
-#     print(f"{feature} mode: {val}")
+# Test set only using a few features
+# features_to_use = ['TransactionID', 'ProductCD', 'card1', 'card4', 'card6', 'addr1', 'isFraud']
+features_to_use = ['TransactionID', 'TransactionAmt', 'addr1', 'isFraud']
+data = full_data[features_to_use].copy()
+# data = full_data.copy()
 
 
+# Handle missing values
+for col in data.columns:
+    if pd.api.types.is_numeric_dtype(data[col]):
+        # Fill missing numbers with the median
+        data[col] = data[col].fillna(data[col].median())
+    else:
+        # Fill missing strings/categories with the mode
+        data[col] = data[col].fillna(data[col].mode()[0])
 
+# Separate features (x) from the target (y)
+y = data['isFraud']
+x = data.drop(columns=['isFraud', 'TransactionID'])
 
-# print(features)
+# Training and testing the data with the training dataset
+# Testing data = 0.20, Validation = 0.25, Training = 0.55
+# todo: use the validation sets for something
+X_train_val, X_test, y_train_val, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=0.25, random_state=42)
 
+# Full training data, including isFraud Category
+train_df = pd.concat([X_train, y_train], axis=1)
 
-# create decision tree
+print(f"Yay training! Training with {len(train_df)} samples.")
 
-# tree = DT.decisionTree(training_data)
-# head_node = tree.DT_construction()
+# create tree object
+tree = DT.decisionTree(train_df)
+
+# construct the decision tree
+print("Building the decision tree...")
+root_node = tree.DT_construction()
+print("Decision tree has been built!!")
+
+predictions = []
+predictions_results = []
+print(f"Making predictions on {len(X_test)} test samples...")
+
+# Loop through each row in the test set
+for index, row in X_test.iterrows():
+    # yay classify
+    prediction = tree.DT_classify(row, root_node)
+    predictions.append(prediction)
+
+    # used for csv creation
+    predictions_results.append({
+        'TransactionID': index,
+        'isFraud': prediction
+    })
+
+bal_accuracy = balanced_accuracy_score(y_test, predictions)
+report = classification_report(y_test, predictions)
+
+print("\n--- Model Performance ---")
+print(f"Accuracy: {bal_accuracy:.4f}")
+print("\nClassification Report:")
+print(report)
+
+# Create a submission CSV
+submission_df = pd.DataFrame(predictions_results)
+submission_df.to_csv(
+    out_file, # 'submission.csv'
+    index=False,
+    columns=['TransactionID', 'isFraud']
+)

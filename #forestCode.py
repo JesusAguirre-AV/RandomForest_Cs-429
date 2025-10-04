@@ -5,7 +5,7 @@ import numpy
 from scipy import stats
 
 
-sample = r.read_csv('sample_sub.csv')
+sample = r.read_csv('sample_submission.csv')
 testD = r.read_csv('test.csv')
 trainD = r.read_csv('train.csv')
 

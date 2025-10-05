@@ -23,6 +23,7 @@ import numpy as np
 import argparse
 from sklearn.model_selection import train_test_split  # allowed
 import decisionTree as DT  # our implementation
+import randomForest as RandomForest
 
 
 # -------------------------------
@@ -80,6 +81,8 @@ def confusion_matrix(y_true, y_pred):
     fn = np.sum((y_true == 1) & (y_pred == 0))
     tp = np.sum((y_true == 1) & (y_pred == 1))
     return np.array([[tn, fp], [fn, tp]])
+
+#def generateTrainingSamples
 
 
 # main logic
@@ -159,53 +162,133 @@ def main():
 
     print(f"train size: {len(X_train)}, val size: {len(X_val)}, test size: {len(X_test)}")
 
-    # 3.train Decision Tree
-    print("\ntraining decision tree")
-    train_df = pd.concat([X_train.reset_index(drop=True),
-                          y_train.reset_index(drop=True).rename(TARGET)], axis=1)
 
-    # parameters can be tuned as needed
-    tree = DT.decisionTree(
-        train_df,
-        impurity="ginis",        # 'gini' | 'misclassification' | 'entropy'
-        alpha=0.01,                 # chi-square pruning threshold
-        max_depth=14,              # limit tree depth to avoid overfitting
-        min_samples_split=10,
-        min_samples_leaf=5,
-        max_features=None,         # use all features per split
-        numeric_thresholds=32      # quantile based thresholds per numeric feature
-    )
 
-    start_time = time.time()
-    root = tree.DT_construction()
-    print(f"tree built successfully in {time.time() - start_time:.2f} seconds.")
+    structureUsed = input("Which structure would you like to use?\n\n1. Decision tree\n2. Random forest\n")
 
-    # 4. Evaluate Performance
-    print("\nevaluating tree on validation and test sets")
+    if structureUsed == "1":
 
-    def predict(tree, root, X):
-        return [tree.DT_classify(row, root) for _, row in X.iterrows()]
+        # 3.train Decision Tree
+        print("\ntraining decision tree")
+        train_df = pd.concat([X_train.reset_index(drop=True),
+                              y_train.reset_index(drop=True).rename(TARGET)], axis=1)
 
-    # validation predictions
-    y_pred_val = predict(tree, root, X_val)
-    y_pred_test = predict(tree, root, X_test)
+        # parameters can be tuned as needed
+        tree = DT.decisionTree(
+            train_df,
+            impurity="entropy",        # 'gini' | 'misclassification' | 'entropy'
+            alpha=0.01,                 # chi-square pruning threshold
+            max_depth=14,              # limit tree depth to avoid overfitting
+            min_samples_split=10,
+            min_samples_leaf=5,
+            max_features=None,         # use all features per split
+            numeric_thresholds=32      # quantile based thresholds per numeric feature
+        )
 
-    # validation metrics
-    acc_val = accuracy(y_val, y_pred_val)
-    bacc_val = balanced_accuracy(y_val, y_pred_val)
-    cm_val = confusion_matrix(y_val, y_pred_val)
+        start_time = time.time()
+        root = tree.DT_construction()
+        print(f"tree built successfully in {time.time() - start_time:.2f} seconds.")
 
-    # test metrics
-    acc_test = accuracy(y_test, y_pred_test)
-    bacc_test = balanced_accuracy(y_test, y_pred_test)
-    cm_test = confusion_matrix(y_test, y_pred_test)
+        # 4. Evaluate Performance
+        print("\nevaluating tree on validation and test sets")
 
-    # 5. Print Results
-    print("\nRESULTS")
-    print(f"Validation Accuracy: {acc_val:.4f} | Balanced Accuracy: {bacc_val:.4f}")
-    print(f"Validation Confusion Matrix:\n{cm_val}\n")
-    print(f"Test Accuracy: {acc_test:.4f} | Balanced Accuracy: {bacc_test:.4f}")
-    print(f"Test Confusion Matrix:\n{cm_test}")
+        def treePredict(tree, root, X):
+            return [tree.DT_classify(row, root) for _, row in X.iterrows()]
+
+        # validation predictions
+        y_pred_val = treePredict(tree, root, X_val)
+        y_pred_test = treePredict(tree, root, X_test)
+
+        # validation metrics
+        acc_val = accuracy(y_val, y_pred_val)
+        bacc_val = balanced_accuracy(y_val, y_pred_val)
+        cm_val = confusion_matrix(y_val, y_pred_val)
+
+        # test metrics
+        acc_test = accuracy(y_test, y_pred_test)
+        bacc_test = balanced_accuracy(y_test, y_pred_test)
+        cm_test = confusion_matrix(y_test, y_pred_test)
+
+
+        # 5. Print Results
+        print("\nRESULTS")
+        print(f"Validation Accuracy: {acc_val:.4f} | Balanced Accuracy: {bacc_val:.4f}")
+        print(f"Validation Confusion Matrix:\n{cm_val}\n")
+        print(f"Test Accuracy: {acc_test:.4f} | Balanced Accuracy: {bacc_test:.4f}")
+        print(f"Test Confusion Matrix:\n{cm_test}")
+
+    elif structureUsed == "2":
+
+        def forestPredict(randforest, X):
+            return [randforest.predict(row) for _, row in X.iterrows()]
+
+        #RandomForest Signature     ->      (alpha=None, numTrees=5, maxDepth=None, impurity="ginis", xInput=None, yInput=None, minSampleSplit = 10, minSampleLeaf=5, maxFeatures=None, numericThresholds=32)
+        forest = RandomForest.RandomForest(alpha = 0.01,
+                                           numTrees = 15,
+                                           maxDepth = 14,
+                                           impurity = "ginis",
+                                           xInput = X,
+                                           yInput = y,
+                                           minSampleSplit = 10,
+                                           minSampleLeaf = 5,
+                                           maxFeatures = None,
+                                           numericThresholds = 32)
+        forest.trainTrees()
+
+        print("\nRandom forest created and trained\n")
+        print("Generating new splits to use for testing...")
+
+
+        X_train_val, X_test, y_train_val, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42, stratify=y
+        )
+
+        X_train, X_val, y_train, y_val = train_test_split(
+            X_train_val, y_train_val, test_size=0.25,
+            random_state=42, stratify=y_train_val
+        )
+        print("\tSplits generated.")
+
+        print("Predicting on new split...")
+        y_pred_val = forestPredict(forest, X_val)
+        y_pred_test = forestPredict(forest, X_test)
+        print("\tPredictions done.")
+
+        print("Running validation metrics...")
+        # validation metrics
+        acc_val = accuracy(y_val, y_pred_val)
+        bacc_val = balanced_accuracy(y_val, y_pred_val)
+        cm_val = confusion_matrix(y_val, y_pred_val)
+        print("\tValidation metrics done.\nRunning test metrics...")
+
+        # test metrics
+        acc_test = accuracy(y_test, y_pred_test)
+        bacc_test = balanced_accuracy(y_test, y_pred_test)
+        cm_test = confusion_matrix(y_test, y_pred_test)
+        print("\tTest metrics done.")
+
+        print("\nRESULTS")
+        print(f"Validation Accuracy: {acc_val:.4f} | Balanced Accuracy: {bacc_val:.4f}")
+        print(f"Validation Confusion Matrix:\n{cm_val}\n")
+        print(f"Test Accuracy: {acc_test:.4f} | Balanced Accuracy: {bacc_test:.4f}")
+        print(f"Test Confusion Matrix:\n{cm_test}")
+
+
+print("\n\n")
+print(r"""
+ /$$$$$$       /$$   /$$  /$$$$$$  /$$$$$$$$ /$$$$$$$$       /$$$$$$$  /$$     /$$ /$$$$$$$$ /$$   /$$  /$$$$$$  /$$   /$$
+|_  $$_/      | $$  | $$ /$$__  $$|__  $$__/| $$_____/      | $$__  $$|  $$   /$$/|__  $$__/| $$  | $$ /$$__  $$| $$$ | $$
+  | $$        | $$  | $$| $$  \ $$   | $$   | $$            | $$  \ $$ \  $$ /$$/    | $$   | $$  | $$| $$  \ $$| $$$$| $$
+  | $$        | $$$$$$$$| $$$$$$$$   | $$   | $$$$$         | $$$$$$$/  \  $$$$/     | $$   | $$$$$$$$| $$  | $$| $$ $$ $$
+  | $$        | $$__  $$| $$__  $$   | $$   | $$__/         | $$____/    \  $$/      | $$   | $$__  $$| $$  | $$| $$  $$$$
+  | $$        | $$  | $$| $$  | $$   | $$   | $$            | $$          | $$       | $$   | $$  | $$| $$  | $$| $$\  $$$
+ /$$$$$$      | $$  | $$| $$  | $$   | $$   | $$$$$$$$      | $$          | $$       | $$   | $$  | $$|  $$$$$$/| $$ \  $$
+|______/      |__/  |__/|__/  |__/   |__/   |________/      |__/          |__/       |__/   |__/  |__/ \______/ |__/  \__/
+""")
+
+
+
+
 
 # only run main if file executed directly
 if __name__ == "__main__":

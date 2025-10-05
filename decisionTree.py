@@ -70,7 +70,7 @@ class decisionTree:
           1) make a node and set its label to the majority class in D.
           2) check stopping rules (pure, depth limit, too small).
           3) choose best split (feature and possibly threshold).
-          4) pptionally apply chi-square pre-pruning to reject weak splits.
+          4) optionally apply chi-square pre-pruning to reject weak splits.
           5) recurse on child subsets and attach successors.
         """
         #create a new node and assign the majority label (used if we stop here)

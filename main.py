@@ -222,56 +222,75 @@ def main():
         def forestPredict(randforest, X):
             return [randforest.predict(row) for _, row in X.iterrows()]
 
-        #RandomForest Signature     ->      (alpha=None, numTrees=5, maxDepth=None, impurity="ginis", xInput=None, yInput=None, minSampleSplit = 10, minSampleLeaf=5, maxFeatures=None, numericThresholds=32)
-        forest = RandomForest.RandomForest(alpha = 0.01,
-                                           numTrees = 15,
-                                           maxDepth = 14,
-                                           impurity = "ginis",
-                                           xInput = X,
-                                           yInput = y,
-                                           minSampleSplit = 10,
-                                           minSampleLeaf = 5,
-                                           maxFeatures = None,
-                                           numericThresholds = 32)
-        forest.trainTrees()
-
-        print("\nRandom forest created and trained\n")
-        print("Generating new splits to use for testing...")
+        alphas = [0.01, 0.05, 0.1, 0.25, 0.5, 0.9]
+        testAccs = []
+        testBAccs = []
 
 
-        X_train_val, X_test, y_train_val, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42, stratify=y
-        )
+        for a in alphas:
+            print("\n\n******************************************")
+            print("Starting experiment with alpha = " + str(a))
+            print("******************************************\n")
 
-        X_train, X_val, y_train, y_val = train_test_split(
-            X_train_val, y_train_val, test_size=0.25,
-            random_state=42, stratify=y_train_val
-        )
-        print("\tSplits generated.")
+            #RandomForest Signature     ->      (alpha=None, numTrees=5, maxDepth=None, impurity="ginis", xInput=None, yInput=None, minSampleSplit = 10, minSampleLeaf=5, maxFeatures=None, numericThresholds=32)
+            forest = RandomForest.RandomForest(alpha = a,
+                                               numTrees = 15,
+                                               maxDepth = 14,
+                                               impurity = "ginis",
+                                               xInput = X,
+                                               yInput = y,
+                                               minSampleSplit = 10,
+                                               minSampleLeaf = 5,
+                                               maxFeatures = 10,
+                                               numericThresholds = 32)
+            forest.trainTrees()
 
-        print("Predicting on new split...")
-        y_pred_val = forestPredict(forest, X_val)
-        y_pred_test = forestPredict(forest, X_test)
-        print("\tPredictions done.")
+            print("\nRandom forest created and trained\n")
+            print("Generating new splits to use for testing...")
 
-        print("Running validation metrics...")
-        # validation metrics
-        acc_val = accuracy(y_val, y_pred_val)
-        bacc_val = balanced_accuracy(y_val, y_pred_val)
-        cm_val = confusion_matrix(y_val, y_pred_val)
-        print("\tValidation metrics done.\nRunning test metrics...")
 
-        # test metrics
-        acc_test = accuracy(y_test, y_pred_test)
-        bacc_test = balanced_accuracy(y_test, y_pred_test)
-        cm_test = confusion_matrix(y_test, y_pred_test)
-        print("\tTest metrics done.")
+            X_train_val, X_test, y_train_val, y_test = train_test_split(
+                X, y, test_size=0.2, random_state=42, stratify=y
+            )
 
-        print("\nRESULTS")
-        print(f"Validation Accuracy: {acc_val:.4f} | Balanced Accuracy: {bacc_val:.4f}")
-        print(f"Validation Confusion Matrix:\n{cm_val}\n")
-        print(f"Test Accuracy: {acc_test:.4f} | Balanced Accuracy: {bacc_test:.4f}")
-        print(f"Test Confusion Matrix:\n{cm_test}")
+            X_train, X_val, y_train, y_val = train_test_split(
+                X_train_val, y_train_val, test_size=0.25,
+                random_state=42, stratify=y_train_val
+            )
+            print("\tSplits generated.")
+
+            print("Predicting on new split...")
+            y_pred_val = forestPredict(forest, X_val)
+            y_pred_test = forestPredict(forest, X_test)
+            print("\tPredictions done.")
+
+            print("Running validation metrics...")
+            # validation metrics
+            acc_val = accuracy(y_val, y_pred_val)
+            bacc_val = balanced_accuracy(y_val, y_pred_val)
+            cm_val = confusion_matrix(y_val, y_pred_val)
+            print("\tValidation metrics done.\nRunning test metrics...")
+
+            # test metrics
+            acc_test = accuracy(y_test, y_pred_test)
+            bacc_test = balanced_accuracy(y_test, y_pred_test)
+            cm_test = confusion_matrix(y_test, y_pred_test)
+            print("\tTest metrics done.")
+
+            print("\nRESULTS")
+            print(f"Validation Accuracy: {acc_val:.4f} | Balanced Accuracy: {bacc_val:.4f}")
+            print(f"Validation Confusion Matrix:\n{cm_val}\n")
+            print(f"Test Accuracy: {acc_test:.4f} | Balanced Accuracy: {bacc_test:.4f}")
+            print(f"Test Confusion Matrix:\n{cm_test}")
+            print("Adding accuracies to arrays...")
+            testAccs.append(acc_test)
+            testBAccs.append(bacc_test)
+
+        print("**************************************************************************************************\n\tPrediction done. Here are the results for all")
+        for i in range(0, 6):
+            print("\nResults for random forest with alhpa value: " + str(alphas[i]))
+            print("Test accuracy: " + str(testAccs[i]))
+            print("Balanced accuracy: " + str(testBAccs[i]))
 
 
 print("\n\n")

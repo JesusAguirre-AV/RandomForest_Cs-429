@@ -4,9 +4,10 @@
 
 ```angular2html
 Running on its own will:
+-Prompts to select between creating a random forrest or single decision tree
 -Load train.csv
 -Split into training, validation, and test sets
--Build and evaluate a single decision tree
+-Build and evaluate a single decision tree or to a random forrest depending on selection
 -Results are printed to the console
 
 
@@ -37,9 +38,9 @@ Argument	Default	                Description
 ### Contributors
 
 - Jesus | Implemented Decision Tree Class, Node Class
-- Carly Salazar | Implemented Decision Tree Class, 
-- Ben | 
-- Greg |
+- Carly Salazar | Implemented Decision Tree Class, Edited hyper-parameters
+- Ben | Chi-square implementation, main class set up
+- Greg | Random forrest implrmentation, Hyper-parameter setting
 
 ### Kaggle 
 Kaggle score etc

@@ -118,13 +118,13 @@ def main():
 
         tree = DT.decisionTree(
             train_df,
-            impurity="entropy",
-            alpha=0.1,
-            max_depth=14,
-            min_samples_split=10,
-            min_samples_leaf=5,
-            max_features=None,
-            numeric_thresholds=32
+            impurity="entropy",                 #Any
+            alpha=0.1,                          #ANY
+            max_depth=14,                       #20
+            min_samples_split=10,               #5
+            min_samples_leaf=5,                 #1
+            max_features=None,                  #50
+            numeric_thresholds=32               #32
         )
 
         start_time = time.time()
@@ -222,7 +222,7 @@ def main():
         def forestPredict(randforest, X):
             return [randforest.predict(row) for _, row in X.iterrows()]
 
-        alphas = [0.01, 0.05, 0.1, 0.25, 0.5, 0.9]
+        alphas = [0.01]    #, 0.05, 0.1, 0.25, 0.5, 0.9]
         testAccs = []
         testBAccs = []
 
@@ -234,14 +234,14 @@ def main():
 
             #RandomForest Signature     ->      (alpha=None, numTrees=5, maxDepth=None, impurity="ginis", xInput=None, yInput=None, minSampleSplit = 10, minSampleLeaf=5, maxFeatures=None, numericThresholds=32)
             forest = RandomForest.RandomForest(alpha = a,
-                                               numTrees = 15,
-                                               maxDepth = 14,
-                                               impurity = "ginis",
+                                               numTrees = 1,
+                                               maxDepth = 2,
+                                               impurity = "entropy",
                                                xInput = X,
                                                yInput = y,
-                                               minSampleSplit = 10,
-                                               minSampleLeaf = 5,
-                                               maxFeatures = 10,
+                                               minSampleSplit = 5,
+                                               minSampleLeaf = 1,
+                                               maxFeatures = 5,
                                                numericThresholds = 32)
             forest.trainTrees()
 
@@ -263,6 +263,25 @@ def main():
             y_pred_val = forestPredict(forest, X_val)
             y_pred_test = forestPredict(forest, X_test)
             print("\tPredictions done.")
+
+            train_df = pd.concat([X_train.reset_index(drop=True),
+                                  y_train.reset_index(drop=True).rename("isFraud")], axis=1)
+            print("df generated")
+            y_pred_test = [forestPredict(forest, X) for _, row in X_train.iterrows()]
+
+            print("Line 271")
+
+
+            # load sample submission for correct format
+            sample = pd.read_csv(args.sample_sub)
+            print("Line 276")
+            if len(sample) != len(y_pred_test):
+                print(f"length mismatch! sample_sub has {len(sample)}, predictions have {len(y_pred_test)}")
+            print("line 279")
+            sample.iloc[:, -1] = y_pred_test  # put predictions into last column
+            sample.to_csv("forestSubmission.csv", index=False)
+            sample.iloc[:, -1] = y_pred_test  # put predictions into last column
+            sample.to_csv("forestSubmission.csv", index=False)
 
             print("Running validation metrics...")
             # validation metrics

@@ -31,9 +31,11 @@ class RandomForest:
 
         print("Creating " + str(numTrees) + " tree(s) in a random forest using " + str(impurity) + " method for impurity measure")
 
-
+    """
+    This function goes through and creates + trains every tree in the forest. It generates a new split of the training data for EVERY TREE and trains them on a different data set.
+    Done on lines 41-48 where the "shuffle" flag is set to true.
+    """
     def trainTrees(self):
-
         for i in range(0, self.numTrees):
             print("\nGenerating training data for tree " + str(i+1))
             X_train_val, X_test, y_train_val, y_test = train_test_split(
@@ -47,32 +49,39 @@ class RandomForest:
             self.train_df = pd.concat([X_train.reset_index(drop=True),
                                   y_train.reset_index(drop=True).rename("isFraud")], axis=1)
             print("\tTraining data generated.")
+
+            #create tree
             tree = decisionTree(
                 self.train_df,
                 self.impurity,  # 'gini' | 'misclassification' | 'entropy'
-                alpha=self.alpha,  # chi-square pruning threshold
+                alpha=self.alpha,
                 max_depth=self.maxDepth,  # limit tree depth to avoid overfitting
                 min_samples_split=self.min_sample_split,
                 min_samples_leaf=self.min_sample_leaf,
                 max_features=self.maxFeatures,  # use all features per split
                 numeric_thresholds=self.numericThresholds
             )
+            # training tree
             print("\tTraining tree " + str(i+1) + " of " + str(self.numTrees) + "...")
             start_time = time.time()
             root = tree.DT_construction()
             print(f"Training done in {time.time() - start_time:.3f} seconds")
 
+            # adding tree and root node to array of trees and roots that get used in the predict function.
             self.trees.append(tree)
             print("\tTree appended.")
             self.roots.append(root)
             print("\tRoot appended.")
 
-
+    # Takes X and predicts for every tree in the forest. Then takes the average
     def predict(self,X):
         predictions = []
         for i in range(0, self.numTrees):
             predictions.append(self.trees[i].DT_classify(X, self.roots[i]))
 
-        total = sum(predictions)
-        result = round(total)
+        total = sum(predictions)/self.numTrees
+        if(total < 0.5):
+            result = 0
+        elif(total >= 0.5):
+            result = 1
         return result

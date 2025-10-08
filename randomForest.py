@@ -6,12 +6,9 @@ from sklearn.model_selection import train_test_split
 
 from decisionTree import decisionTree
 
-
 sample = pd.read_csv('sample_submission.csv')
 testD = pd.read_csv('test.csv')
 trainD = pd.read_csv('train.csv')
-
-"D = one of the data sets"
 
 class RandomForest:
     def __init__(self, alpha=None, numTrees=5, maxDepth=None, impurity="ginis", xInput=None, yInput=None, minSampleSplit = 10, minSampleLeaf=5, maxFeatures=None, numericThresholds=32):
@@ -39,12 +36,12 @@ class RandomForest:
         for i in range(0, self.numTrees):
             print("\nGenerating training data for tree " + str(i+1))
             X_train_val, X_test, y_train_val, y_test = train_test_split(
-                self.xInput, self.yInput, test_size=0.2, random_state=42,shuffle=True, stratify=self.yInput
+                self.xInput, self.yInput, test_size=0.2, random_state=None,shuffle=True, stratify=self.yInput
             )
 
             X_train, X_val, y_train, y_val = train_test_split(
                 X_train_val, y_train_val, test_size=0.25,
-                random_state=42, stratify=y_train_val, shuffle=True
+                random_state=None, stratify=y_train_val, shuffle=True
             )
             self.train_df = pd.concat([X_train.reset_index(drop=True),
                                   y_train.reset_index(drop=True).rename("isFraud")], axis=1)

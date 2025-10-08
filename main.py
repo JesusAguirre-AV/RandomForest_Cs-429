@@ -145,15 +145,15 @@ def main():
     else:
         print("\nTraining Random Forest")
         forest = RandomForest.RandomForest(
-            alpha=0.1,                # Chi-square pruning threshold
-            numTrees=3,
-            maxDepth=1,
+            alpha=0.9,                # Chi-square pruning threshold
+            numTrees=5,
+            maxDepth=15,
             impurity="ginis",          # 'gini', 'misclassification', or 'entropy'
             xInput=X_train,
             yInput=y_train,
-            minSampleSplit=10,
-            minSampleLeaf=5,
-            maxFeatures=1,
+            minSampleSplit=5,
+            minSampleLeaf=1,
+            maxFeatures=50,
             numericThresholds=32
         )
 

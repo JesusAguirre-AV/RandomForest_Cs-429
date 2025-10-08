@@ -222,7 +222,7 @@ def main():
         def forestPredict(randforest, X):
             return [randforest.predict(row) for _, row in X.iterrows()]
 
-        alphas = [0.01]    #, 0.05, 0.1, 0.25, 0.5, 0.9]
+        alphas = [0.5]
         testAccs = []
         testBAccs = []
 
@@ -234,14 +234,14 @@ def main():
 
             #RandomForest Signature     ->      (alpha=None, numTrees=5, maxDepth=None, impurity="ginis", xInput=None, yInput=None, minSampleSplit = 10, minSampleLeaf=5, maxFeatures=None, numericThresholds=32)
             forest = RandomForest.RandomForest(alpha = a,
-                                               numTrees = 1,
-                                               maxDepth = 2,
-                                               impurity = "entropy",
+                                               numTrees = 25,
+                                               maxDepth = 20,
+                                               impurity = "ginis",
                                                xInput = X,
                                                yInput = y,
                                                minSampleSplit = 5,
                                                minSampleLeaf = 1,
-                                               maxFeatures = 5,
+                                               maxFeatures = 50,
                                                numericThresholds = 32)
             forest.trainTrees()
 
@@ -264,24 +264,15 @@ def main():
             y_pred_test = forestPredict(forest, X_test)
             print("\tPredictions done.")
 
-            train_df = pd.concat([X_train.reset_index(drop=True),
-                                  y_train.reset_index(drop=True).rename("isFraud")], axis=1)
-            print("df generated")
-            y_pred_test = [forestPredict(forest, X) for _, row in X_train.iterrows()]
+            id_col = X_test.iloc[:, 0]  # first column (IDs)
+            out = pd.DataFrame({
+                id_col.name: id_col,
+                'y_pred': np.asarray(y_pred_test)
+            })
 
-            print("Line 271")
+            out = out.sort_values(by=id_col.name, ascending=True, kind='mergesort')  # stable sort
+            out.to_csv('ginis_submission.csv', index=False)
 
-
-            # load sample submission for correct format
-            sample = pd.read_csv(args.sample_sub)
-            print("Line 276")
-            if len(sample) != len(y_pred_test):
-                print(f"length mismatch! sample_sub has {len(sample)}, predictions have {len(y_pred_test)}")
-            print("line 279")
-            sample.iloc[:, -1] = y_pred_test  # put predictions into last column
-            sample.to_csv("forestSubmission.csv", index=False)
-            sample.iloc[:, -1] = y_pred_test  # put predictions into last column
-            sample.to_csv("forestSubmission.csv", index=False)
 
             print("Running validation metrics...")
             # validation metrics
@@ -306,8 +297,8 @@ def main():
             testBAccs.append(bacc_test)
 
         print("**************************************************************************************************\n\tPrediction done. Here are the results for all")
-        for i in range(0, 6):
-            print("\nResults for random forest with alhpa value: " + str(alphas[i]))
+        for i in range(0, 1):
+            print("\nResults for random forest with alhpa value: 0.5")# + str(alphas[i]))
             print("Test accuracy: " + str(testAccs[i]))
             print("Balanced accuracy: " + str(testBAccs[i]))
 

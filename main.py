@@ -17,6 +17,7 @@ Everything else (metrics, impurity, gain, etc.) was implemented by hand.
 -------------------------------------------------------------------------------
 """
 
+import os
 import time
 import pandas as pd
 import numpy as np
@@ -88,9 +89,12 @@ def confusion_matrix(y_true, y_pred):
 
 def main():
     TARGET = "isFraud"
-    DATA_CSV = "train.csv"
-    TEST_CSV = "test.csv"
-    SAMPLE_SUB = "sample_submission.csv"
+    #DATA_CSV = "train.csv"
+    #TEST_CSV = "test.csv"
+    #SAMPLE_SUB = "sample_submission.csv"
+    DATA_CSV = input("Enter the file path for training data(e.g train.csv): ")
+    TEST_CSV = input("Enter the file path for training data(e.g test.csv): ")
+    SAMPLE_SUB = input("Enter the file path for training data(e.g sample_submission.csv): ")
 
     print("Loading dataset")
     df = pd.read_csv(DATA_CSV)

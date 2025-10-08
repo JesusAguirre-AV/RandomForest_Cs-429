@@ -10,6 +10,8 @@ To pick between a tree or forest please change the boolean on line 118.
 
 After picking paramters simply run the program and it will provide a submission.csv file
 based on the sample_submission.csv format.
+
+There will also be a need to input the file paths for the csv files.
 ```
 
 

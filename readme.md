@@ -3,35 +3,13 @@
 ## How to run
 
 ```angular2html
-Running on its own will:
--Prompts to select between creating a random forrest or single decision tree
--Load train.csv
--Split into training, validation, and test sets
--Build and evaluate a single decision tree or to a random forrest depending on selection
--Results are printed to the console
+To change parameters please manually change anything of interest via lines 127-134 or 148-157 
+depending on if you are running a single tree or forest respectively. 
 
+To pick between a tree or forest please change the boolean on line 118.
 
-To train on all of train.csv and make predictions for test.csv, run:
-'python main.py --submit' or give paramter of --submit
-
-This will: 
--Train on the entire training dataset (no validation split)
--Load test.csv
--Read sample_submission.csv for the required output format
--Write predictions to a new file: submission.csv
-
-To run with other parameters follow this layout: 
-'python main.py --data_csv my_train.csv --test_csv my_test.csv --sample_sub my_sample.csv"
-
-Where,
-
-Argument	Default	                Description
---submit	(off)	                Enables Kaggle submission mode(generates csv file and runs with test.csv)
---data_csv	train.csv	        Training data (with labels)
---test_csv	test.csv	        Unlabeled test data
---sample_sub	sample_submission.csv	Sample submission file for Kaggle
-
-
+After picking paramters simply run the program and it will provide a submission.csv file
+based on the sample_submission.csv format.
 ```
 
 
@@ -39,7 +17,7 @@ Argument	Default	                Description
 
 - Jesus | Implemented Decision Tree Class, Node Class
 - Carly Salazar | Implemented Decision Tree Class, Edited hyper-parameters
-- Ben | Chi-square implementation, main class set up
+- Ben | Tree class, Chi-square implementation, Optmization, Dealt with missing Data, Main class set up
 - Greg | Random forrest implrmentation, Hyper-parameter setting
 
 ### Kaggle 

@@ -287,7 +287,7 @@ def main():
             cm_test = confusion_matrix(y_test, y_pred_test)
             print("\tTest metrics done.")
 
-            print("\nRESULTS")
+            print("\nRESULsTS")
             print(f"Validation Accuracy: {acc_val:.4f} | Balanced Accuracy: {bacc_val:.4f}")
             print(f"Validation Confusion Matrix:\n{cm_val}\n")
             print(f"Test Accuracy: {acc_test:.4f} | Balanced Accuracy: {bacc_test:.4f}")

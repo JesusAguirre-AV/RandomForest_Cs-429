@@ -94,9 +94,6 @@ def main():
     DATA_CSV = "train.csv"
     TEST_CSV = "test.csv"
     SAMPLE_SUB = "sample_submission.csv"
-    # DATA_CSV = input("Enter the file path for training data(e.g train.csv): ")
-    # TEST_CSV = input("Enter the file path for testing data(e.g test.csv): ")
-    # SAMPLE_SUB = input("Enter the file path for training data(e.g sample_submission.csv): ")
 
     print("Loading dataset")
     df = pd.read_csv(DATA_CSV)

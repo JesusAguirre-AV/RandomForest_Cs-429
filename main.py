@@ -46,7 +46,9 @@ def impute_missing_values(df: pd.DataFrame) -> None:
 
 
 def accuracy(y_true, y_pred):
-    """Compute simple accuracy = (# correct) / (total)."""
+    """
+    Compute simple accuracy = (# correct) / (total).
+    """
     y_true = np.asarray(y_true)
     y_pred = np.asarray(y_pred)
     return float((y_true == y_pred).mean())
@@ -89,12 +91,12 @@ def confusion_matrix(y_true, y_pred):
 
 def main():
     TARGET = "isFraud"
-    #DATA_CSV = "train.csv"
-    #TEST_CSV = "test.csv"
-    #SAMPLE_SUB = "sample_submission.csv"
-    DATA_CSV = input("Enter the file path for training data(e.g train.csv): ")
-    TEST_CSV = input("Enter the file path for training data(e.g test.csv): ")
-    SAMPLE_SUB = input("Enter the file path for training data(e.g sample_submission.csv): ")
+    DATA_CSV = "train.csv"
+    TEST_CSV = "test.csv"
+    SAMPLE_SUB = "sample_submission.csv"
+    # DATA_CSV = input("Enter the file path for training data(e.g train.csv): ")
+    # TEST_CSV = input("Enter the file path for testing data(e.g test.csv): ")
+    # SAMPLE_SUB = input("Enter the file path for training data(e.g sample_submission.csv): ")
 
     print("Loading dataset")
     df = pd.read_csv(DATA_CSV)
@@ -118,9 +120,7 @@ def main():
 
 
     #select the model here
-
     USE_FOREST = True  # change to False to use a single Decision Tree
-
 
     if not USE_FOREST:
         print("\nTraining Decision Tree")
@@ -149,10 +149,10 @@ def main():
     else:
         print("\nTraining Random Forest")
         forest = RandomForest.RandomForest(
-            alpha=0.9,                # Chi-square pruning threshold
+            alpha=0.9,               # Chi-square pruning threshold
             numTrees=5,
             maxDepth=15,
-            impurity="ginis",          # 'gini', 'misclassification', or 'entropy'
+            impurity="gini",          # 'gini', 'misclassification', or 'entropy'
             xInput=X_train,
             yInput=y_train,
             minSampleSplit=5,
@@ -168,9 +168,7 @@ def main():
         y_pred_val = [forest.predict(row) for _, row in X_val.iterrows()]
         y_pred_test = [forest.predict(row) for _, row in X_test.iterrows()]
 
-
     #metrics
-
     print("\nValidation Results")
     print(f"Accuracy: {accuracy(y_val, y_pred_val):.4f}")
     print(f"Balanced Accuracy: {balanced_accuracy(y_val, y_pred_val):.4f}")

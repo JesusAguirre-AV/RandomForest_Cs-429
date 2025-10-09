@@ -1,14 +1,7 @@
 import pandas as pd
-import numpy
 import time
-from scipy import stats
 from sklearn.model_selection import train_test_split
-
 from decisionTree import decisionTree
-
-sample = pd.read_csv('sample_submission.csv')
-testD = pd.read_csv('test.csv')
-trainD = pd.read_csv('train.csv')
 
 class RandomForest:
     def __init__(self, alpha=None, numTrees=5, maxDepth=None, impurity="ginis", xInput=None, yInput=None, minSampleSplit = 10, minSampleLeaf=5, maxFeatures=None, numericThresholds=32):
@@ -28,11 +21,12 @@ class RandomForest:
 
         print("Creating " + str(numTrees) + " tree(s) in a random forest using " + str(impurity) + " method for impurity measure")
 
-    """
-    This function goes through and creates + trains every tree in the forest. It generates a new split of the training data for EVERY TREE and trains them on a different data set.
-    Done on lines 41-48 where the "shuffle" flag is set to true.
-    """
+
     def trainTrees(self):
+        """
+        This function goes through and creates + trains every tree in the forest. It generates a new split of the training data for EVERY TREE and trains them on a different data set.
+        Done on lines 32-38 where the "shuffle" flag is set to true.
+        """
         for i in range(0, self.numTrees):
             print("\nGenerating training data for tree " + str(i+1))
             X_train_val, X_test, y_train_val, y_test = train_test_split(
